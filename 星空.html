@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+	<meta charset="UTF-8">
+	<title>canvas</title>
+	<style type="text/css">
+		body{
+			margin: 0;
+			overflow: hidden;
+		}
+		#canvas{
+			position: fixed;
+			display: block;
+			background: black;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas" width="500" height="500"></canvas>
+	<script type="text/javascript">
+		// var canvas = document.getElementById('canvas');
+		// console.log(canvas);
+		var move  = {x:0,y:0};
+		function Starry(){
+			this.cxt = canvas.getContext("2d");
+			canvas.width = window.innerWidth;
+			canvas.height = window.innerHeight;
+			this.cW = canvas.width;
+			this.cH  = canvas.height;
+			this.num = 200;
+			this.data = [];
+		} 
+		Starry.prototype = { 
+			init: function(){
+				for(var i = 0;i<this.num;i++)
+				{
+					this.data[i] = {
+						x:Math.random()*this.cW,
+						y:Math.random()*this.cH,
+						cX:Math.random()*0.6 - 0.3,
+						cY:Math.random()*0.6 - 0.3
+					}
+					this.drawCircle(this.data[i].x,this.data[i].y);
+				}
+				// console.log(this.data)
+			},
+			//画随机点
+			drawCircle: function(x,y){
+				var cxt = this.cxt;
+				cxt.beginPath();
+				cxt.fillStyle = "white";
+				cxt.arc(x,y,1,0,Math.PI*2,false);
+				cxt.closePath();
+				cxt.fill();
+				cxt.restore();
+			},
+			//随机点移动
+			moveCircle: function(){
+				var self = this;
+				self.cxt.clearRect(0, 0, self.cW,self.cH);
+				for(var i = 0;i<self.num;i++){
+					self.data[i].x += self.data[i].cX;
+					self.data[i].y += self.data[i].cY;
+					if(self.data[i].x>self.cW||self.data[i].x<0){
+						self.data[i].cX = -self.data[i].cX;
+					}
+					if(self.data[i].y>self.cH||self.data[i].y<0){
+						self.data[i].cY = -self.data[i].cY;
+					}
+					self.drawCircle(self.data[i].x,self.data[i].y);
+					for(var j=i+1;j<self.num;j++){
+ 						if(Math.pow(self.data[i].x - self.data[j].x,2)+Math.pow(self.data[i].y -self.data[j].y,2) <= 50*50){
+							self.drawLine(self.data[i].x,self.data[i].y,self.data[j].x,self.data[j].y);
+ 						}
+ 					}
+					if(move!={x:0,y:0}){
+						for(var j=i+1;j<self.num;j++){
+ 							if(Math.pow(self.data[i].x -  move.x,2)+Math.pow(self.data[i].y - move.y,2) <= 50*50){
+								self.drawLine(self.data[i].x,self.data[i].y, move.x, move.y);
+ 							}
+ 						}
+					}
+				}
+			},
+			drawLine: function(x1,y1,x2,y2){
+				var cxt = this.cxt;
+				var color = cxt.createLinearGradient(x1,y1,x2,y2);
+				color.addColorStop(0, 'aliceblue');
+				color.addColorStop(1, 'darkblue');
+				cxt.save();
+				cxt.strokeStyle = color;
+				cxt.moveTo(x1, y1);
+				cxt.lineTo(x2, y2);
+				cxt.closePath();
+				cxt.stroke();
+				cxt.restore();
+
+			}
+		}
+		var starry = new Starry();
+		starry.init();
+		canvas.onmousemove = function(e){
+			 move.x = e.pageX;
+			 move.y = e.pageY;
+			 // console.log(move)
+		}
+		var timer = setInterval(function(){
+			starry.moveCircle();
+			},30);
+	</script>
+</body>
+</html>
